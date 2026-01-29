@@ -46,7 +46,6 @@ public class UserServicesImpl implements IUserServices{
 	    String trimEmail=user.getUserEmail().trim().toLowerCase();
 	    user.setUserEmail(trimEmail);
 	    
-
 	    return userRepository.save(user);
 	    
 	}
@@ -92,7 +91,7 @@ public class UserServicesImpl implements IUserServices{
 		newPasswordConfirm = newPasswordConfirm.trim();
 		
 		if(userOptForChangePassword.isEmpty()) {
-			throw new IllegalArgumentException("Benutze wurde nicht gefunden. Bitte Support kontaktieren");
+			throw new IllegalArgumentException("Benutzer wurde nicht gefunden. Bitte Support kontaktieren");
 		}
 		
 		User user = userOptForChangePassword.get();
@@ -129,7 +128,4 @@ public class UserServicesImpl implements IUserServices{
 		
 		return userRepository.save(user);
 	}
-
-
-
 }
