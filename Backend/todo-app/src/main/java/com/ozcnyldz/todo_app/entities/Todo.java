@@ -33,7 +33,7 @@ public class Todo {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long ID; 
+	private Long id; 
 	
 	@Column(nullable = false, length = 100)
 	private String title;

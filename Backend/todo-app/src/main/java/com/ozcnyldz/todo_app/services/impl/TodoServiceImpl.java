@@ -2,7 +2,6 @@ package com.ozcnyldz.todo_app.services.impl;
 
 import java.time.LocalDate;
 
-import java.time.YearMonth;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -27,14 +26,31 @@ public class TodoServiceImpl implements ITodoServices {
 			this.userRepository=userRepository;
 			
 	}
+	
+	//Meine Helper Methoden für Wiederholende Logik
 	public Long getCurrentUserId() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		CustomUserDetails cud = (CustomUserDetails) auth.getPrincipal();
 		return cud.getUser().getId();
 		}
+	
+	private Todo getTodoForCurrentUser(Long todoId) {
+	    Long userId = getCurrentUserId();
+
+	    Todo todo = todoRepository.findById(todoId)
+	        .orElseThrow(() -> new IllegalArgumentException("Todo nicht gefunden"));
+
+	    if (!todo.getUser().getId().equals(userId)) {
+	        throw new IllegalArgumentException("Kein Zugriff auf dieses Todo");
+	    }
+
+	    return todo;
+	}
 
 	@Override
 	public Todo createTodo(Todo todo) {
+		
+		// Validierungen
 		if(todo.getTitle() == null || todo.getTitle().isBlank()){
 			throw new IllegalArgumentException("Title kann nicht leer sein");
 		}
@@ -44,10 +60,10 @@ public class TodoServiceImpl implements ITodoServices {
 		if (todo.getDate() == null) {
 		    todo.setDate(LocalDate.now());
 		}		
+		
 		Long userId = getCurrentUserId();
 		User user = userRepository.findById(userId)
 		.orElseThrow(() -> new IllegalArgumentException("User nicht gefunden"));
-
 
 		todo.setUser(user);
 		return todoRepository.save(todo);
@@ -55,16 +71,8 @@ public class TodoServiceImpl implements ITodoServices {
 	
 	@Override
 	public Todo updateTodo(Long todoId, Todo updatedTodo) {
-	    Long userId = getCurrentUserId();
-
-	    // Zuerst das Todo aus der DB holen
-	    Todo todoFromDb = todoRepository.findById(todoId)
-	        .orElseThrow(() -> new IllegalArgumentException("Todo nicht gefunden"));
-
-	    // Prüfen, ob das Todo zum aktuell eingeloggten User gehört
-	    if (!todoFromDb.getUser().getId().equals(userId)) {
-	        throw new IllegalArgumentException("Sie dürfen dieses Todo nicht bearbeiten");
-	    }
+		
+		Todo todoFromDb = getTodoForCurrentUser(todoId);
 
 	    // Validierungen
 	    if (updatedTodo.getTitle() == null || updatedTodo.getTitle().isBlank()) {
@@ -89,32 +97,38 @@ public class TodoServiceImpl implements ITodoServices {
 
 	@Override
 	public void deleteTodo(Long todoId) {
-		Long userId=getCurrentUserId();
+		
+		Todo todoFromDb = getTodoForCurrentUser(todoId);
+		
+		todoRepository.delete(todoFromDb);
 		
 	}
 
 	@Override
 	public Todo toggleDone(Long todoId) {
-		// TODO Auto-generated method stub
-		return null;
+		Todo todoFromDb=getTodoForCurrentUser(todoId);
+		
+		todoFromDb.setDone(!todoFromDb.isDone());
+		return todoRepository.save(todoFromDb);
 	}
 
 	@Override
 	public Todo moveTodo(Long todoId, LocalDate newDate) {
-		// TODO Auto-generated method stub
-		return null;
+		Todo todoFromDb=getTodoForCurrentUser(todoId);
+		
+		todoFromDb.setDate(newDate);
+		return todoRepository.save(todoFromDb);
 	}
 
 	@Override
-	public List<Todo> getTodosByDate( LocalDate date) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Todo> getTodosByDate(LocalDate date) {
+	    Long userId = getCurrentUserId();
+
+	    date = LocalDate.now();
+	    
+	    List<Todo> userDayTodos=todoRepository.findAllByUserIdAndDate(userId, date);
+		return userDayTodos;
 	}
 
-	@Override
-	public List<Todo> getTodosByMonth( YearMonth month) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

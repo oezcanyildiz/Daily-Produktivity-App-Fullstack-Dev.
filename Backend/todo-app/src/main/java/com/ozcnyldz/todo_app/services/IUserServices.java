@@ -8,11 +8,18 @@ public interface IUserServices {
 	
 	public User loginUser(String userEmail, String userPassword);
 	
-	public void deactivateUser(Long ID);
+	public void deleteCurrentUser();
 	
-	public User changeUserPassword(Long id, String oldPassword, String newPassword, String newPasswordConfirm);
+	public User changeUserPassword(Long ID, String oldPassword, String newPassword, String newPasswordConfirm);
 	
 	public User updateUserEmail(Long ID,String oldUserEmail,String newUserEmail);
+	
+	public User changePasswordForCurrentUser(
+	        String oldPassword,
+	        String newPassword,
+	        String newPasswordConfirm);
+	
+	public User updateEmailForCurrentUser(String oldEmail, String newEmail);
 	
 
 }

@@ -2,9 +2,12 @@ package com.ozcnyldz.todo_app.services.impl;
 
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ozcnyldz.todo_app.config.CustomUserDetails;
 import com.ozcnyldz.todo_app.entities.User;
 import com.ozcnyldz.todo_app.repository.UserRepository;
 import com.ozcnyldz.todo_app.services.IUserServices;
@@ -20,6 +23,17 @@ public class UserServicesImpl implements IUserServices{
 	                        PasswordEncoder passwordEncoder) {
 	    this.userRepository = userRepository;
 	    this.passwordEncoder = passwordEncoder;
+	}
+	
+	//Helper für ID über JWT
+	public Long getCurrentUserId() {
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+	    if (auth == null || !(auth.getPrincipal() instanceof CustomUserDetails cud)) {
+	        throw new IllegalStateException("Kein eingeloggter Benutzer");
+	    }
+
+	    return cud.getUser().getId();
 	}
 
 	@Override
@@ -39,6 +53,7 @@ public class UserServicesImpl implements IUserServices{
 	        throw new IllegalArgumentException("Email existiert bereits");
 	    }
 
+	    
 	    //user.setUserPassword(hashPassword(user.getUserPassword()));
 	    String hashedPassword = passwordEncoder.encode(user.getUserPassword());
 	    user.setUserPassword(hashedPassword);
@@ -54,22 +69,20 @@ public class UserServicesImpl implements IUserServices{
 	@Override
 	public User loginUser(String userEmail, String userPassword) {
 		Optional<User> userOpt = userRepository.findByUserEmail(userEmail);
+		userEmail = userEmail.trim().toLowerCase();
 		if(userOpt.isEmpty()) {
-			throw new IllegalArgumentException("Ungültige Zugangsdaten");
+			throw new IllegalArgumentException("Ungültige email");
 		}
 		
 		User user = userOpt.get();
 
-
 		if (!passwordEncoder.matches(userPassword, user.getUserPassword())) {
-		throw new IllegalArgumentException("Ungültige Zugangsdaten");
+		throw new IllegalArgumentException("Ungültige password");
 		}
-
 
 		if (!user.isActive()) {
 		throw new IllegalArgumentException("Benutzer ist deaktiviert");
 		}
-
 
 		return user;
 	}
@@ -77,10 +90,11 @@ public class UserServicesImpl implements IUserServices{
 
 
 	@Override
-	public void deactivateUser(Long ID) {
-		User user = userRepository.findById(ID).orElseThrow(() -> new IllegalArgumentException("User nicht gefunden"));
+	public void deleteCurrentUser() {
+		Long id = getCurrentUserId();
+		User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User nicht gefunden"));
 		user.setActive(false);
-		userRepository.save(user);		
+		userRepository.save(user);	
 	}
 
 	@Override
@@ -100,7 +114,6 @@ public class UserServicesImpl implements IUserServices{
 		throw new IllegalArgumentException("Ungültige Password");
 		}
 		
-
 		if(newPassword.equals(newPasswordConfirm)) {
 		    String newHashedPassword = passwordEncoder.encode(newPassword);
 		    user.setUserPassword(newHashedPassword);
@@ -109,6 +122,16 @@ public class UserServicesImpl implements IUserServices{
 		}
 
 		return userRepository.save(user);
+	}
+	
+	@Override
+	public User changePasswordForCurrentUser(
+	        String oldPassword,
+	        String newPassword,
+	        String newPasswordConfirm) {
+
+	    Long userId = getCurrentUserId();
+	    return changeUserPassword(userId, oldPassword, newPassword, newPasswordConfirm);
 	}
 
 	@Override
@@ -127,5 +150,11 @@ public class UserServicesImpl implements IUserServices{
 		user.setUserEmail(newUserEmail);
 		
 		return userRepository.save(user);
+	}
+	
+	@Override
+	public User updateEmailForCurrentUser(String oldEmail, String newEmail) {
+	    Long id = getCurrentUserId();
+	    return updateUserEmail(id, oldEmail, newEmail);
 	}
 }

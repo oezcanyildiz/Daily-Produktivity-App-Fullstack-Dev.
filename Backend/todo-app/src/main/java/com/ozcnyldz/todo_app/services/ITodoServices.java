@@ -1,7 +1,7 @@
 package com.ozcnyldz.todo_app.services;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
+
 import java.util.List;
 
 import com.ozcnyldz.todo_app.entities.Todo;
@@ -18,8 +18,8 @@ public interface ITodoServices {
 
 	Todo moveTodo(Long todoId,  LocalDate newDate);
 
-	List<Todo> getTodosByDate( LocalDate date);
+	List<Todo> getTodosByDate(LocalDate date);
 
-	List<Todo> getTodosByMonth( YearMonth month);
+
 
 }
