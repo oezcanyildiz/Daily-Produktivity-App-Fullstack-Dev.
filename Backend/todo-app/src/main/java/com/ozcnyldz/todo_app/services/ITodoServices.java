@@ -7,9 +7,8 @@ import java.util.List;
 import com.ozcnyldz.todo_app.dto.TodoRequestDTO;
 import com.ozcnyldz.todo_app.dto.TodoResponseDTO;
 
-
 public interface ITodoServices {
-	
+
     // Todo erstellen
     TodoResponseDTO createTodo(TodoRequestDTO newTodo);
 
@@ -28,6 +27,6 @@ public interface ITodoServices {
     // Alle Todos für heute abrufen
     List<TodoResponseDTO> getTodayTodos();
 
-
+    List<TodoResponseDTO> getTodosByDate(LocalDate date); // New method
 
 }

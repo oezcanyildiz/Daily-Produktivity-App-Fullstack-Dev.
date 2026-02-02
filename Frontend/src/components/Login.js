@@ -1,80 +1,68 @@
 import React, { useState } from 'react';
-import '../styles/Auth.css';
+import { useNavigate, Link } from 'react-router-dom';
+import { login } from '../Services/authService';
 
-const Login = ({ onSwitchToRegister }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        setMessage('Login erfolgreich!');
-        // Hier später zur Todo-Seite weiterleiten
-      } else {
-        setMessage('Login fehlgeschlagen. Bitte überprüfe deine Daten.');
-      }
-    } catch (error) {
-      setMessage('Fehler beim Login. Ist der Server erreichbar?');
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleLogin();
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Login fehlgeschlagen. Bitte überprüfen Sie Ihre Daten.');
     }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
-        <h2>Anmelden</h2>
-        
-        {message && <div className="message-box">{message}</div>}
-        
-        <div className="form-content">
-          <div className="form-group">
-            <label>E-Mail</label>
+      <div className="auth-card">
+        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#1e293b' }}>
+          Daily's Login
+        </h2>
+        {error && (
+          <div style={{
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            padding: '0.75rem',
+            borderRadius: '8px',
+            marginBottom: '1rem',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="deine@email.de"
+              placeholder="ihre.email@beispiel.de"
+              required
             />
           </div>
-          
-          <div className="form-group">
-            <label>Passwort</label>
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Passwort</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
               placeholder="••••••••"
+              required
             />
           </div>
-          
-          <button onClick={handleLogin} className="btn-primary">
+          <button type="submit" className="btn-primary" style={{ width: '100%' }}>
             Anmelden
           </button>
-        </div>
-        
-        <p className="switch-page">
-          Noch kein Konto?{' '}
-          <span onClick={onSwitchToRegister}>
-            Jetzt registrieren
-          </span>
+        </form>
+        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b' }}>
+          Noch keinen Account? <Link to="/register" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 500 }}>Registrieren</Link>
         </p>
       </div>
     </div>

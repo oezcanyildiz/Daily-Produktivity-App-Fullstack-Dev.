@@ -69,4 +69,10 @@ public class TodoController implements ITodoController {
     public List<TodoResponseDTO> getTodayTodos() {
         return todoServices.getTodayTodos();
     }
+
+    @Override
+    @GetMapping("/mydailys/date/{date}")
+    public List<TodoResponseDTO> getTodosByDate(@PathVariable LocalDate date) {
+        return todoServices.getTodosByDate(date);
+    }
 }

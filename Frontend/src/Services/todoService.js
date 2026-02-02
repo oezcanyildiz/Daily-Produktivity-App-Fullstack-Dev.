@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/todos';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:8080') + '/todo';
 
 // Holt Token für Authorization Header
 const getAuthHeader = () => {
@@ -9,9 +9,16 @@ const getAuthHeader = () => {
   };
 };
 
-// Alle Todos vom eingeloggten User holen
+// Alle Todos für HEUTE holen
 export const getTodos = async () => {
-  const response = await fetch(API_URL, {
+  // Standardmäßig Heute laden
+  const today = new Date().toISOString().split('T')[0];
+  return getTodosByDate(today);
+};
+
+// Alle Todos für ein bestimmtes Datum holen
+export const getTodosByDate = async (date) => {
+  const response = await fetch(`${API_URL}/mydailys/date/${date}`, {
     method: 'GET',
     headers: getAuthHeader(),
   });
@@ -24,16 +31,16 @@ export const getTodos = async () => {
 };
 
 // Neues Todo erstellen
-export const createTodo = async (title, description, dueDate, priority) => {
-  const response = await fetch(API_URL, {
+export const createTodo = async (title, description, date, dueTime) => {
+  const response = await fetch(`${API_URL}/create`, {
     method: 'POST',
     headers: getAuthHeader(),
     body: JSON.stringify({
       title,
       description,
-      dueDate,
-      priority: priority || 'MEDIUM',
-      status: 'OPEN',
+      date,
+      dueTime,
+      done: false,
     }),
   });
 
@@ -46,7 +53,7 @@ export const createTodo = async (title, description, dueDate, priority) => {
 
 // Todo aktualisieren
 export const updateTodo = async (id, todoData) => {
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await fetch(`${API_URL}/update/${id}`, {
     method: 'PUT',
     headers: getAuthHeader(),
     body: JSON.stringify(todoData),
@@ -61,7 +68,7 @@ export const updateTodo = async (id, todoData) => {
 
 // Todo löschen
 export const deleteTodo = async (id) => {
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await fetch(`${API_URL}/delete/${id}`, {
     method: 'DELETE',
     headers: getAuthHeader(),
   });
@@ -73,23 +80,22 @@ export const deleteTodo = async (id) => {
   return true;
 };
 
-// Todo Status ändern (z.B. erledigt/offen)
-export const toggleTodoStatus = async (id, currentStatus) => {
-  const newStatus = currentStatus === 'DONE' ? 'OPEN' : 'DONE';
-  
-  return await updateTodo(id, { status: newStatus });
-};
-
-// Ein einzelnes Todo holen
-export const getTodoById = async (id) => {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'GET',
+// Todo Status ändern (done: true/false) -> Backend hat /toggle/{id}
+export const toggleTodoStatus = async (id, currentDoneStatus) => {
+  const response = await fetch(`${API_URL}/toggle/${id}`, {
+    method: 'PUT', // Controller uses PUT for toggle
     headers: getAuthHeader(),
   });
 
   if (!response.ok) {
-    throw new Error('Todo konnte nicht geladen werden');
+    throw new Error('Todo Status konnte nicht geändert werden');
   }
 
   return await response.json();
+};
+
+// Ein einzelnes Todo holen (Backend hat das nicht explizit in der Liste, wir nutzen getTodos)
+export const getTodoById = async (id) => {
+  // Not implemented in backend controller
+  return null;
 };

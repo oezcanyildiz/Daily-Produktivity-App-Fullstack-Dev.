@@ -25,4 +25,6 @@ public interface ITodoController {
 
     // Alle Todos für heute abrufen
     List<TodoResponseDTO> getTodayTodos();
+
+    List<TodoResponseDTO> getTodosByDate(LocalDate date);
 }

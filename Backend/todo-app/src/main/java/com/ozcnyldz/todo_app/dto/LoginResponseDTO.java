@@ -10,8 +10,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginResponseDTO {
-
-	    private String token;
-	    private String tokenType = "Bearer";
-	    private String userEmail;
+	private String token;
+	private String userName;
+	private String userEmail;
+	private String tokenType = "Bearer"; // Default value, usually ignores AllArgsConstructor if not careful, better to
+											// initialize manually.
 }

@@ -1,112 +1,79 @@
 import React, { useState } from 'react';
-import '../styles/Auth.css';
+import { useNavigate, Link } from 'react-router-dom';
+import { register } from '../Services/authService';
 
-const Register = ({ onSwitchToLogin }) => {
+const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      setMessage('Passwörter stimmen nicht überein!');
-      return;
-    }
-
-    if (password.length < 6) {
-      setMessage('Passwort muss mindestens 6 Zeichen lang sein!');
-      return;
-    }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8080/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (response.ok) {
-        setMessage('Registrierung erfolgreich! Du kannst dich jetzt anmelden.');
-        setTimeout(() => onSwitchToLogin(), 2000);
-      } else {
-        setMessage('Registrierung fehlgeschlagen. E-Mail existiert bereits?');
-      }
-    } catch (error) {
-      setMessage('Fehler bei der Registrierung. Ist der Server erreichbar?');
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleRegister();
+      await register(name, email, password);
+      navigate('/login');
+    } catch (err) {
+      setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.');
     }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
-        <h2>Registrieren</h2>
-        
-        {message && <div className="message-box">{message}</div>}
-        
-        <div className="form-content">
-          <div className="form-group">
-            <label>Name</label>
+      <div className="auth-card">
+        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#1e293b' }}>
+          Account erstellen
+        </h2>
+        {error && (
+          <div style={{
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            padding: '0.75rem',
+            borderRadius: '8px',
+            marginBottom: '1rem',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Dein Name"
+              placeholder="Max Mustermann"
+              required
             />
           </div>
-          
-          <div className="form-group">
-            <label>E-Mail</label>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="deine@email.de"
+              placeholder="ihre.email@beispiel.de"
+              required
             />
           </div>
-          
-          <div className="form-group">
-            <label>Passwort</label>
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Passwort</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
               placeholder="••••••••"
+              required
             />
           </div>
-          
-          <div className="form-group">
-            <label>Passwort bestätigen</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="••••••••"
-            />
-          </div>
-          
-          <button onClick={handleRegister} className="btn-primary">
+          <button type="submit" className="btn-primary" style={{ width: '100%' }}>
             Registrieren
           </button>
-        </div>
-        
-        <p className="switch-page">
-          Bereits ein Konto?{' '}
-          <span onClick={onSwitchToLogin}>
-            Jetzt anmelden
-          </span>
+        </form>
+        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b' }}>
+          Bereits einen Account? <Link to="/login" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 500 }}>Anmelden</Link>
         </p>
       </div>
     </div>

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.ozcnyldz.todo_app.entities.User;
 
@@ -11,62 +12,52 @@ public class CustomUserDetails implements UserDetails {
 
 	private final User user;
 
-
 	public CustomUserDetails(User user) {
-	this.user = user;
+		this.user = user;
 	}
-
-	
 
 	// LOGIN-IDENTITÄT (Email statt Username)
 	@Override
 	public String getUsername() {
-	return user.getUserEmail();
+		return user.getUserEmail();
 	}
-
 
 	// PASSWORT (HASH aus DB)
 	@Override
 	public String getPassword() {
-	return user.getUserPassword();
+		return user.getUserPassword();
 	}
-
 
 	// ROLLEN / RECHTE
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-	return Collections.emptyList();
+		return Collections.emptyList();
 	}
-
 
 	// ACCOUNT-STATUS
 	@Override
 	public boolean isAccountNonExpired() {
-	return true;
+		return true;
 	}
-
 
 	@Override
 	public boolean isAccountNonLocked() {
-	return true;
+		return true;
 	}
-
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-	return true;
+		return true;
 	}
-
 
 	// AKTIV / DEAKTIVIERT
 	@Override
 	public boolean isEnabled() {
-	return user.isActive();
+		return user.isActive();
 	}
-
 
 	// BONUS: Zugriff auf echte Entity
 	public User getUser() {
-	return user;
+		return user;
 	}
 }
