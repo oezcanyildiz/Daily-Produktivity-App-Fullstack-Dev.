@@ -16,6 +16,8 @@ Hier ist ein Einblick in die Anwendung:
 ### Login
 ![Login](./Scrennshots/Login.png)
 
+User: admin@example.com
+Password : 123456789
 ---
 
 ## Beschreibung
